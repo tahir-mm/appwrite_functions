@@ -1,6 +1,7 @@
 from appwrite.client import Client
 from appwrite.services.users import Users
 from appwrite.exception import AppwriteException
+from appwrite.services.databases import Databases
 import os
 import json
 
