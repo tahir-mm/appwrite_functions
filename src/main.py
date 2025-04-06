@@ -2,6 +2,7 @@ from appwrite.client import Client
 from appwrite.services.users import Users
 from appwrite.exception import AppwriteException
 import os
+import json
 
 # This Appwrite function will be executed every time your function is triggered
 def main(context):
@@ -14,14 +15,30 @@ def main(context):
         .set_key(context.req.headers["x-appwrite-key"])
     )
     users = Users(client)
-
+    databases = Databases(client)
+    
     try:
         response = users.list()
         # Log messages and errors to the Appwrite Console
         # These logs won't be seen by your end users
         context.log("Total users: " + str(response["total"]))
+        result = databases.list_documents(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["COLLECTION_ID"]
+        )
+
+        return res.json({
+            "success": True,
+            "message": "Documents fetched successfully.",
+            "documents": result["documents"]
+        })
+        
     except AppwriteException as err:
         context.error("Could not list users: " + repr(err))
+        return res.json({
+            "success": False,
+            "message": str(e)
+        }, status_code=500)
 
     # The req object contains the request data
     if context.req.path == "/ping":
