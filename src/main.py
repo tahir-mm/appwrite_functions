@@ -44,7 +44,7 @@ def main(context):
         
     except AppwriteException as err:
         context.error("Could not list users: " + repr(err))
-        return res.json({
+        return context.res.json({
             "success": False,
             "message": str(e)
         }, status_code=500)
