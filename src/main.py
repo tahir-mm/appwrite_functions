@@ -36,6 +36,8 @@ def main(context):
             # }
         )
 
+        context.log("Total Orders: " + result["documents"])
+
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
