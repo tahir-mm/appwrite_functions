@@ -27,13 +27,11 @@ def main(context):
         result = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["COLLECTION_ID"]
-            # queries = {
-            
-            #     "$filter": "order_status='Completed'",  # Replace with your actual field name and value
-            #     # "$filter": "bmonth=11",  # Replace with your actual field name and value
-            #     "$limit": 500  # Replace with the desired limit
-            #     # "$offset": 0  # Replace with the desired offset
-            # }
+            queries=[
+                Query.equal("status", ["Completed"]),           # WHERE status = 'active'
+                Query.select(["order_no", "grand_total", "order_date", "order_status", "userTbl.full_name", "userTbl.mobile"]),
+                Query.limit(500)              # ORDER BY createdAt DESC
+            ]
         )
 
         context.log("Total Orders: " + str(result["documents"]))
@@ -41,7 +39,7 @@ def main(context):
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
-            "documents": result["documents"]
+            "documents": str(result["documents"])
         })
         
     except AppwriteException as err:
