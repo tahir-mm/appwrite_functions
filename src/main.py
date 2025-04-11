@@ -23,12 +23,14 @@ def main(context):
         # Log messages and errors to the Appwrite Console
         # These logs won't be seen by your end users
         context.log("Total users: " + str(response["total"]))
+        queries = [{'limit': 100}]
         result = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
-            collection_id=os.environ["COLLECTION_ID"]
+            collection_id=os.environ["COLLECTION_ID"],
+            queries
         )
 
-        return res.json({
+        return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
             "documents": result["documents"]
