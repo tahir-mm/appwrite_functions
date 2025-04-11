@@ -23,11 +23,17 @@ def main(context):
         # Log messages and errors to the Appwrite Console
         # These logs won't be seen by your end users
         context.log("Total users: " + str(response["total"]))
-        queries = [{'limit': 100}]
+        # queries = [{'limit': 100}]
         result = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["COLLECTION_ID"],
-            queries
+            queries = {
+            
+                "$filter": "order_status='Completed'",  # Replace with your actual field name and value
+                # "$filter": "bmonth=11",  # Replace with your actual field name and value
+                "$limit": 500  # Replace with the desired limit
+                # "$offset": 0  # Replace with the desired offset
+            }
         )
 
         return context.res.json({
