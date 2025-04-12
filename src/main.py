@@ -62,7 +62,7 @@ def getAllOrders(context, databases, status):
 def getOrderByNumber(context, databases, number):
     try:
         context.log("Getting order number " + number + ": ")
-        order = databases.getDocument(
+        order = databases.get_document(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_COLLECTION_ID"],
             queries=[
