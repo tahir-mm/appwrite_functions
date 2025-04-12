@@ -141,12 +141,13 @@ def calculateSummary(context, databases):
     try:
         context.log("Calculating Summary:")
 
-        statuses = [{"status":"Completed", "count": 0, "total": 0.00}, 
-                    {"status":"Inprogress", "count": 0, "total": 0.00},
-                    {"status":"Checked", "count": 0, "total": 0.00}, 
-                    {"status":"Paid", "count": 0, "total": 0.00},
-                    {"status":"Packaged", "count": 0, "total": 0.00}, 
-                    {"status":"Assigned", "count": 0, "total": 0.00}
+        statuses = [
+            {"status":"Completed", "count": 0, "total": 0.00}, 
+            {"status":"Inprogress", "count": 0, "total": 0.00},
+            {"status":"Checked", "count": 0, "total": 0.00}, 
+            {"status":"Paid", "count": 0, "total": 0.00},
+            {"status":"Packaged", "count": 0, "total": 0.00}, 
+            {"status":"Assigned", "count": 0, "total": 0.00}
         ]
 
         for status in statuses:
@@ -180,8 +181,8 @@ def calculateSummary(context, databases):
         summary = databases.create_document(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_SUMMARY_COLLECTION_ID"],
-            document_id=ID.unigue(),
-            data={
+            document_id=ID.unique(),
+            data = {
                 'completed_orders':statuses[0]["count"],
                 'completed_order_total': statuses[0]["total"],
                 'inprogress_orders':statuses[0]["count"],
