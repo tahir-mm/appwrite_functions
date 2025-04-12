@@ -3,6 +3,7 @@ from appwrite.services.users import Users
 from appwrite.exception import AppwriteException
 from appwrite.services.databases import Databases
 from appwrite.query import Query
+from appwrite.id import ID
 import os
 import json
 
@@ -133,6 +134,83 @@ def getAllOrderTotalByStatus(context, databases, status):
             "message": str(err)
         }, status_code=500) 
 
+
+
+
+def calculateSummary(context, databases):
+    try:
+        context.log("Calculating Summary:")
+
+        statuses = [{"status":"Completed", "count": 0, "total": 0.00}, 
+                    {"status":"Inprogress", "count": 0, "total": 0.00},
+                    {"status":"Checked", "count": 0, "total": 0.00}, 
+                    {"status":"Paid", "count": 0, "total": 0.00},
+                    {"status":"Packaged", "count": 0, "total": 0.00}, 
+                    {"status":"Assigned", "count": 0, "total": 0.00}
+        ]
+
+        for status in statuses:
+            result = databases.list_documents(
+                database_id=os.environ["DATABASE_ID"],
+                collection_id=os.environ["ORDER_COLLECTION_ID"],
+                queries=[
+                    Query.equal("order_status", [status["status"]]),           # WHERE status = 'active'
+                    Query.select(["order_no", "grand_total", "order_status"]),
+                    Query.limit(500)              # ORDER BY createdAt DESC
+                ]
+            )
+            
+            sum_of_orders = 0
+            for order in result["documents"]:
+                sum_of_orders += order["grand_total"]
+
+            status["count"] = len(result["documents"])
+            status["total"] = sum_of_orders
+            context.log("Total "+str(status["status"])+" Orders: " + str(len(result["documents"])))
+            context.log(" Sum of "+str(status["status"])+" Orders:" + str(sum_of_orders))
+
+        # update summary table
+        context.log("Summary : " + str(statuses))
+
+        grand_total = 0.0
+        for status in statuses:
+            grand_total += status["total"]
+
+        pending_order_total = grand_total - statuses[0]["total"]
+        summary = databases.create_document(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["ORDER_SUMMARY_COLLECTION_ID"],
+            document_id=ID.unigue(),
+            data={
+                'completed_orders':statuses[0]["count"],
+                'completed_order_total': statuses[0]["total"],
+                'inprogress_orders':statuses[0]["count"],
+                'packaged_orders':statuses[0]["count"],
+                'checked_orders':statuses[0]["count"],
+                'paid_orders':statuses[0]["count"],
+                'assigned_orders':statuses[0]["count"],
+                'pending_orders_total':pending_order_total,
+                'all_orders_total':grand_total
+            }
+        )
+
+        context.log("Created Summary : " + str(summary))
+
+        return context.res.json({
+            "success": True,
+            "message": "successfully calculated summary.",
+            "documents": str(statuses)
+        }) 
+    except AppwriteException as err:
+        context.error("Could not list Orders: " + repr(err))
+        return context.res.json({
+            "success": False,
+            "message": str(err)
+        }, status_code=500) 
+
+
+
+
 def getAllProduct(context, databases, quantity):
     try:
         # Log messages and errors to the Appwrite Console
@@ -142,9 +220,9 @@ def getAllProduct(context, databases, quantity):
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["PRODUCT_COLLECTION_ID"],
             queries=[
-                Query.less_than("available_quantity", [int(quantity)]),
+                Query.less_than_equal("available_quantity", [int(quantity)]),
                 Query.select(["$id", "title", "summary", "price", "listed_quantity", "available_quantity", "thumbnail"]),
-                Query.limit(20)                
+                Query.limit(5000)                
               # ORDER BY createdAt DESC
             ]
         )
@@ -192,7 +270,9 @@ def main(context):
         return getOrderByNumber(context, databases, tokens[len(tokens) - 1])              
     elif "/orderTotal" in context.req.path:  #"/orderTotal/Completed"
         tokens = context.req.path.split("/")
-        return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1])     
+        return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1]) 
+    elif "/calculateSummary" in context.req.path:  #"/orderTotal/Completed"
+        return calculateSummary (context, databases)           
     else:        
         return context.res.json(
             {
