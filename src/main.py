@@ -100,7 +100,7 @@ def getAllOrderTotalByStatus(context, databases, status):
         for order in result["documents"]:
             sum_of_orders += order["grand_total"]
         context.log("Total Orders: " + str(result["documents"]) + " -- TOTAL --" + sum_of_orders)
-        
+
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
@@ -123,7 +123,7 @@ def getAllProduct(context, databases, quantity):
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["PRODUCT_COLLECTION_ID"],
             queries=[
-                Query.less_than("available_quantity", quantity),
+                Query.less_than("available_quantity", [quantity]),
                 Query.select(["$id", "title", "summary", "price", "listed_quantity", "available_quantity", "thumbnail"]),
                 Query.limit(20)                
               # ORDER BY createdAt DESC
