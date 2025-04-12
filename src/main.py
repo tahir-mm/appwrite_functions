@@ -61,20 +61,32 @@ def getAllOrders(context, databases, status):
 def getOrderByNumber(context, databases, number):
     try:
         context.log("Getting order number " + number + ": ")
-        result = databases.list_documents(
+        order = databases.getDocument(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_COLLECTION_ID"],
             queries=[
                 Query.equal("order_no", [int(number)]),           # WHERE status = 'active'
-                Query.select(["order_no", "grand_total", "order_date", "order_status", "userTbl.full_name", "userTbl.mobile"]),
-                Query.limit(5)              # ORDER BY createdAt DESC
+                Query.select(["$id", "order_no", "grand_total", "order_date", "order_status", "userTbl.full_name", "userTbl.mobile"])
             ]
         )
-        context.log("Total Orders: " + str(result["documents"]))
+        context.log("Order: " + str(order))
+
+        orderItems = databases.list_documents(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
+            queries=[
+                Query.equal('orderTbl', order["$id"]),
+                Query.select(["$id", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary"]),  
+                Query.limit(500)              # ORDER BY createdAt DESC
+            ]
+        )
+        
+        context.log("Order Details : " + str(orderItems["documents"]))
+
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
-            "documents": str(result["documents"])
+            "documents": str(orderItems["documents"])
         })
     except AppwriteException as err:
         context.error("Could not list Orders: " + repr(err))
@@ -170,7 +182,7 @@ def main(context):
     elif "/orderDetail" in context.req.path:  #"/orderDetail/{order_no}"
         tokens = context.req.path.split("/")
         return getOrderByNumber(context, databases, tokens[len(tokens) - 1])              
-    elif "/orderTotal" == context.req.path:  #"/orderTotal/Completed"
+    elif "/orderTotal" in context.req.path:  #"/orderTotal/Completed"
         tokens = context.req.path.split("/")
         return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1])     
     else:        
