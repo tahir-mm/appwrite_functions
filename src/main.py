@@ -62,7 +62,7 @@ def getAllOrders(context, databases, status):
 def getOrderByNumber(context, databases, number):
     try:
         context.log("Getting order number " + number + ": ")
-        order = databases.get_document(
+        orders = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_COLLECTION_ID"],
             queries=[
@@ -70,19 +70,22 @@ def getOrderByNumber(context, databases, number):
                 Query.select(["$id", "order_no", "grand_total", "order_date", "order_status", "userTbl.full_name", "userTbl.mobile"])
             ]
         )
-        context.log("Order: " + str(order))
+        context.log("Order: " + str(orders["documents"]))
+        if len(orders["documents"]) > 0 :
+            order = orders["documents"][0]
+            orderItems = databases.list_documents(
+                database_id=os.environ["DATABASE_ID"],
+                collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
+                queries=[
+                    Query.equal('orderTbl', order["$id"]),
+                    Query.select(["$id", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary"]),  
+                    Query.limit(500)              # ORDER BY createdAt DESC
+                ]
+            )
+            context.log("Order Details : " + str(orderItems["documents"]))
+        else:
+            context.log("Not found!")
 
-        orderItems = databases.list_documents(
-            database_id=os.environ["DATABASE_ID"],
-            collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
-            queries=[
-                Query.equal('orderTbl', order["$id"]),
-                Query.select(["$id", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary"]),  
-                Query.limit(500)              # ORDER BY createdAt DESC
-            ]
-        )
-        
-        context.log("Order Details : " + str(orderItems["documents"]))
 
         return context.res.json({
             "success": True,
