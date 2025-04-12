@@ -156,22 +156,22 @@ def main(context):
     # Use res object to respond with text(), json(), or binary()
     # Don't forget to return a response!    
     if context.req.path == "/ping":
-        pingPong(context)
+        return pingPong(context)
     elif context.req.path == "/users":  
-        getAllUsers(context, client)  
+        return getAllUsers(context, client)  
     elif "/products/" in context.req.path :  
         tokens = context.req.path.split("/")
-        getAllProduct(context, databases, tokens[len(tokens) - 1])  
+        return getAllProduct(context, databases, tokens[len(tokens) - 1])  
     elif "/order/" in context.req.path:  #"/order/{status}"
         tokens = context.req.path.split("/")
         context.log("Orders by order statys: ", len(tokens), str(tokens))
-        getAllOrders(context, databases, tokens[len(tokens) - 1])     
+        return getAllOrders(context, databases, tokens[len(tokens) - 1])     
     elif "/orderDetail" in context.req.path:  #"/orderDetail/{order_no}"
         tokens = context.req.path.split("/")
-        getOrderByNumber(context, databases, tokens[len(tokens) - 1])              
+        return getOrderByNumber(context, databases, tokens[len(tokens) - 1])              
     elif context.req.path == "/orderTotal/Completed":  #"/orderTotal/Completed"
         tokens = context.req.path.split("/")
-        getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1])     
+        return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1])     
     else:        
         return context.res.json(
             {
