@@ -44,7 +44,8 @@ def getAllOrders(context, databases, status):
                 Query.limit(500)              # ORDER BY createdAt DESC
             ]
         )
-        context.log("Total Orders: " + str(result["documents"]))
+        context.log("Total Orders: " + len(result["documents"]))
+        context.log(str(result["documents"]))
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
@@ -111,7 +112,10 @@ def getAllOrderTotalByStatus(context, databases, status):
         sum_of_orders = 0
         for order in result["documents"]:
             sum_of_orders += order["grand_total"]
-        context.log("Total Orders: " + str(result["documents"]) + " -- TOTAL --" + str(sum_of_orders))
+        
+        context.log("Total Orders: " + len(result["documents"]))
+        context.log(" -- GRAND TOTAL --" + str(sum_of_orders))
+        context.log(str(result["documents"]))
 
         return context.res.json({
             "success": True,
@@ -141,7 +145,8 @@ def getAllProduct(context, databases, quantity):
               # ORDER BY createdAt DESC
             ]
         )
-        context.log("Total Products: " + str(result["documents"]))
+        context.log("Total Products: " + len(result["documents"]))
+        context.log(str(result["documents"]))
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
