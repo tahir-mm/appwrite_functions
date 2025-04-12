@@ -8,7 +8,7 @@ import json
 
 #Function to get all users number
 def getAllUsers(context, client):
-    print("in getting database users:")
+    context.log("in getting database users:")
     users = Users(client)
     try:
         response = users.list()
@@ -95,11 +95,12 @@ def getAllOrderTotalByStatus(context, databases, status):
                 Query.limit(500)              # ORDER BY createdAt DESC
             ]
         )
-        context.log("Total Orders: " + str(result["documents"]))
+        
         sum_of_orders = 0
         for order in result["documents"]:
             sum_of_orders += order["grand_total"]
-
+        context.log("Total Orders: " + str(result["documents"]) + " -- TOTAL --" + sum_of_orders)
+        
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
@@ -117,12 +118,12 @@ def getAllProduct(context, databases, quantity):
     try:
         # Log messages and errors to the Appwrite Console
         # These logs won't be seen by your end users
-        context.log("Getting all product with quantity ["+quantity+"]: ")
+        context.log("Getting all product with quantity ["+quantity+"] or less: ")
         result = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["PRODUCT_COLLECTION_ID"],
             queries=[
-                Query.lessThan("available_quantity", quantity),
+                Query.less_than("available_quantity", quantity),
                 Query.select(["$id", "title", "summary", "price", "listed_quantity", "available_quantity", "thumbnail"]),
                 Query.limit(20)                
               # ORDER BY createdAt DESC
