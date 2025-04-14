@@ -62,7 +62,7 @@ def getAllOrders(context, databases, status):
 
 
 # Order with item 
-def getAllItemSales(context, databases, id):
+def getItemSales(context, databases, id):
     try:
         context.log("Getting all sales against Item :  " + id )
         orderItems = databases.list_documents(
@@ -70,7 +70,7 @@ def getAllItemSales(context, databases, id):
             collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
             queries=[
                 Query.equal('productTbl', [id]),
-                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary", "orderTbl.order_no"]),  
+                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "orderTbl.order_no"]),  
                 Query.limit(500)              # ORDER BY createdAt DESC
             ]
         )
@@ -83,7 +83,7 @@ def getAllItemSales(context, databases, id):
             "documents": str(orderItems["documents"])
         })
     except AppwriteException as err:
-        context.error("Could not list Orders: " + repr(err))
+        context.error("Could not list item sale: " + repr(err))
         return context.res.json({
             "success": False,
             "message": str(err)
@@ -304,7 +304,7 @@ def main(context):
         return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1]) 
     elif "/itemSale" in context.req.path:  #"/itemSale/{productId}"
         tokens = context.req.path.split("/")
-        return getAllItemSales (context, databases, tokens[len(tokens) - 1])      
+        return getItemSales (context, databases, tokens[len(tokens) - 1])      
     elif "/calculateSummary" in context.req.path:  #"/orderTotal/Completed"
         return calculateSummary (context, databases)           
     else:        
