@@ -64,13 +64,13 @@ def getAllOrders(context, databases, status):
 # Order with item 
 def getAllItemSales(context, databases, id):
     try:
-        context.log("Getting all sales against Item :  " + id + ": ")
+        context.log("Getting all sales against Item :  " + id )
         orderItems = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
             queries=[
                 Query.equal('productTbl', [id]),
-                Query.select(["$id", "$Created", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary", "orderTbl.order_no"]),  
+                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary", "orderTbl.order_no"]),  
                 Query.limit(500)              # ORDER BY createdAt DESC
             ]
         )
