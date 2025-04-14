@@ -59,6 +59,37 @@ def getAllOrders(context, databases, status):
             "message": str(err)
         }, status_code=500)        
 
+
+
+# Order with item 
+def getAllItemSales(context, databases, id):
+    try:
+        context.log("Getting all sales against Item :  " + id + ": ")
+        orderItems = databases.list_documents(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
+            queries=[
+                Query.equal('productTbl', [id]),
+                Query.select(["$id", "$Created", "order_quantity", "unit_price", "price", "productTbl.title", "productTbl.summary", "orderTbl.order_no"]),  
+                Query.limit(500)              # ORDER BY createdAt DESC
+            ]
+        )
+        context.log("Total Item Sale : " + str(len(orderItems["documents"])))
+        context.log(str(orderItems["documents"]))
+        
+        return context.res.json({
+            "success": True,
+            "message": "Documents fetched successfully.",
+            "documents": str(orderItems["documents"])
+        })
+    except AppwriteException as err:
+        context.error("Could not list Orders: " + repr(err))
+        return context.res.json({
+            "success": False,
+            "message": str(err)
+        }, status_code=500) 
+
+
 # Order with item 
 def getOrderByNumber(context, databases, number):
     try:
@@ -196,7 +227,6 @@ def calculateSummary(context, databases):
         )
 
         context.log("Created Summary : " + str(summary))
-
         return context.res.json({
             "success": True,
             "message": "successfully calculated summary.",
@@ -272,6 +302,9 @@ def main(context):
     elif "/orderTotal" in context.req.path:  #"/orderTotal/Completed"
         tokens = context.req.path.split("/")
         return getAllOrderTotalByStatus(context, databases, tokens[len(tokens) - 1]) 
+    elif "/itemSale" in context.req.path:  #"/itemSale/{productId}"
+        tokens = context.req.path.split("/")
+        return getAllItemSales (context, databases, tokens[len(tokens) - 1])      
     elif "/calculateSummary" in context.req.path:  #"/orderTotal/Completed"
         return calculateSummary (context, databases)           
     else:        
