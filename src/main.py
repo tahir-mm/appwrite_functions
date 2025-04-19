@@ -193,7 +193,7 @@ def prepareItemSaleSummary(context, databases):
 
         data_map = {}
         for item in orderItems["documents"]:
-            data_map[item.productTbl.title] = {item.order_quantity, item.unit_price, item.price}
+            data_map[item.productTbl.title] = {'quantity':item.order_quantity, 'unitPrice':item.unit_price, 'price':item.price}
 
         
         for key, value in data_map.items():
