@@ -193,8 +193,7 @@ def prepareItemSaleSummary(context, databases):
 
         for item in orderItems["documents"]:
             context.log(" item : " + str(item))
-            itemTitle = [o.title for o in item["productTbl"]]
-            context.log(" item : " + str(itemTitle))
+            context.log(" item Title : " + str(getattr(item["productTbl"], "title")))
 
         return context.res.json({
             "success": True,
