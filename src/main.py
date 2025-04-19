@@ -184,7 +184,7 @@ def prepareItemSaleSummary(context, databases):
             queries=[
                 Query.greater_than("$createdAt", [str(seven_days_ago)]),
                 Query.less_than_equal("$createdAt", [str(current_datetime)]),
-                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "productTbl.title"]),  
+                Query.select(["order_quantity", "unit_price", "price", "productTbl.title"]),  
                 Query.limit(10)              # ORDER BY createdAt DESC
             ]
         )
@@ -193,12 +193,20 @@ def prepareItemSaleSummary(context, databases):
 
         data_map = {}
         for item in orderItems["documents"]:
-            data_map[item["productTbl.title"]] = {"quantity":item["order_quantity"], "unitPrice":item["unit_price"], "price":item["price"]}
+            key = tuple(sorted((k, v) for k, v in item.items() if k != 'order_quantity'))
 
+            if key in data_map:
+                data_map[key]['order_quantity'] += item['order_quantity']
+            else:
+                # Reconstruct the dict and initialize price
+                data_map[key] = {k: v for k, v in key}
+                data_map[key]['order_quantity'] = item['order_quantity']
         
-        for key, value in data_map.items():
-            context.log(str(key) + ' - ' + str(value))
+        unique_list = list(data_map.values())
 
+        # Output the result
+        for item in unique_list:
+            context.log(str(item))
 
         return context.res.json({
             "success": True,
