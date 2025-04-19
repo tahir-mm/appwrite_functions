@@ -4,6 +4,8 @@ from appwrite.exception import AppwriteException
 from appwrite.services.databases import Databases
 from appwrite.query import Query
 from appwrite.id import ID
+from datetime import datetime, timedelta
+
 import os
 import json
 
@@ -168,72 +170,34 @@ def getAllOrderTotalByStatus(context, databases, status):
 
 
 
-def calculateSummary(context, databases):
+def prepareItemSaleSummary(context, databases):
     try:
-        context.log("Calculating Summary:")
+        context.log("Getting all Item sales count :  ")
+        current_datetime = datetime.now()
+        seven_days_ago = current_datetime - timedelta(days=7)
+        context.log("Current DateTime", current_datetime)
+        context.log("7 Days ago DateTime", seven_days_ago)
 
-        statuses = [
-            {"status":"Completed", "count": 0, "total": 0.00}, 
-            {"status":"Inprogress", "count": 0, "total": 0.00},
-            {"status":"Checked", "count": 0, "total": 0.00}, 
-            {"status":"Paid", "count": 0, "total": 0.00},
-            {"status":"Packaged", "count": 0, "total": 0.00}, 
-            {"status":"Assigned", "count": 0, "total": 0.00}
-        ]
-
-        for status in statuses:
-            result = databases.list_documents(
-                database_id=os.environ["DATABASE_ID"],
-                collection_id=os.environ["ORDER_COLLECTION_ID"],
-                queries=[
-                    Query.equal("order_status", [status["status"]]),           # WHERE status = 'active'
-                    Query.select(["order_no", "grand_total", "order_status"]),
-                    Query.limit(500)              # ORDER BY createdAt DESC
-                ]
-            )
-            
-            sum_of_orders = 0
-            for order in result["documents"]:
-                sum_of_orders += order["grand_total"]
-
-            status["count"] = len(result["documents"])
-            status["total"] = sum_of_orders
-            context.log("Total "+str(status["status"])+" Orders: " + str(len(result["documents"])))
-            context.log(" Sum of "+str(status["status"])+" Orders:" + str(sum_of_orders))
-
-        # update summary table
-        context.log("Summary : " + str(statuses))
-
-        grand_total = 0.0
-        for status in statuses:
-            grand_total += status["total"]
-
-        pending_order_total = grand_total - statuses[0]["total"]
-        summary = databases.create_document(
+        orderItems = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
-            collection_id=os.environ["ORDER_SUMMARY_COLLECTION_ID"],
-            document_id=ID.unique(),
-            data = {
-                'completed_orders':statuses[0]["count"],
-                'completed_order_total': statuses[0]["total"],
-                'inprogress_orders':statuses[0]["count"],
-                'packaged_orders':statuses[0]["count"],
-                'checked_orders':statuses[0]["count"],
-                'paid_orders':statuses[0]["count"],
-                'assigned_orders':statuses[0]["count"],
-                'pending_orders_total':pending_order_total,
-                'all_orders_total':grand_total
-            }
+            collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
+            queries=[
+                Query.greater_than("$createdAt", [seven_days_ago]),
+                Query.less_than_equal("$createdAt", [current_datetime]),
+                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "orderTbl.order_no, productTbl.title"]),  
+                Query.limit(10)              # ORDER BY createdAt DESC
+            ]
         )
-
-        context.log("Created Summary : " + str(summary))
+        context.log("Total Item Sale : " + str(len(orderItems["documents"])))
+        context.log(str(orderItems["documents"]))
+        
         return context.res.json({
             "success": True,
-            "message": "successfully calculated summary.",
-            "documents": str(statuses)
-        }) 
+            "message": "Documents fetched successfully.",
+            "documents": str(orderItems["documents"])
+        })
     except AppwriteException as err:
-        context.error("Could not list Orders: " + repr(err))
+        context.error("Could not list item sale: " + repr(err))
         return context.res.json({
             "success": False,
             "message": str(err)
@@ -305,8 +269,8 @@ def main(context):
     elif "/itemSale" in context.req.path:  #"/itemSale/{productId}"
         tokens = context.req.path.split("/")
         return getItemSales (context, databases, tokens[len(tokens) - 1])      
-    elif "/calculateSummary" in context.req.path:  #"/orderTotal/Completed"
-        return calculateSummary (context, databases)           
+    elif "/itemSummary" in context.req.path:  #"/orderTotal/Completed"
+        return prepareItemSaleSummary (context, databases)           
     else:        
         return context.res.json(
             {
