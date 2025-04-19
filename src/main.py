@@ -190,7 +190,16 @@ def prepareItemSaleSummary(context, databases):
         )
         context.log("Total Item Sale : " + str(len(orderItems["documents"])))
         context.log(str(orderItems["documents"]))
+
+        data_map = {}
+        for item in orderItems["documents"]:
+            data_map[item.productTbl.title] = {item.order_quantity, item.unit_price, item.price}
+
         
+        for key, value in data_map.items():
+            context.log(str(key) + ' - ' + str(value))
+
+
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
