@@ -173,7 +173,7 @@ def getAllOrderTotalByStatus(context, databases, status):
 def prepareItemSaleSummary(context, databases):
     try:
         context.log("Getting all Item sales count :  ")
-        current_datetime = datetime.now()
+        current_datetime = datetime.utcnow()
         seven_days_ago = current_datetime - timedelta(days=7)
         context.log("Current DateTime", current_datetime)
         context.log("7 Days ago DateTime", seven_days_ago)
@@ -182,8 +182,8 @@ def prepareItemSaleSummary(context, databases):
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["ORDER_ITEM_COLLECTION_ID"],
             queries=[
-                Query.greater_than("$createdAt", [seven_days_ago]),
-                Query.less_than_equal("$createdAt", [current_datetime]),
+                Query.greater_than("$createdAt", [str(seven_days_ago)]),
+                Query.less_than_equal("$createdAt", [str(current_datetime)]),
                 Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "orderTbl.order_no, productTbl.title"]),  
                 Query.limit(10)              # ORDER BY createdAt DESC
             ]
