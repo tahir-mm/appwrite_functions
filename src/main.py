@@ -184,7 +184,7 @@ def prepareItemSaleSummary(context, databases):
             queries=[
                 Query.greater_than("$createdAt", [str(seven_days_ago)]),
                 Query.less_than_equal("$createdAt", [str(current_datetime)]),
-                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "orderTbl.order_no", "productTbl.title"]),  
+                Query.select(["$id", "$createdAt", "order_quantity", "unit_price", "price", "productTbl.title"]),  
                 Query.limit(10)              # ORDER BY createdAt DESC
             ]
         )
