@@ -191,9 +191,21 @@ def prepareItemSaleSummary(context, databases):
         context.log("Total Item Sale : " + str(len(orderItems["documents"])))
         context.log(str(orderItems["documents"]))
 
+        summary = {}
         for item in orderItems["documents"]:
+            key = item["productTbl"]["title"]
+            if key in summary:
+                summary[key]["price"] += item["price"]
+                summary[key]["quantity"] += item["order_quantity"]
+            else:
+                summary[key]["price"] = item["price"]
+                summary[key]["quantity"] = item["order_quantity"]
+
             context.log(" item : " + str(item))
             context.log(" item Title : " + str(item["productTbl"]["title"]))
+
+        for sale in summary:
+            context.log(str(sale))
 
         return context.res.json({
             "success": True,
