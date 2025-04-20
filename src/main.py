@@ -5,6 +5,7 @@ from appwrite.services.databases import Databases
 from appwrite.query import Query
 from appwrite.id import ID
 from datetime import datetime, timedelta
+from toolz import itertoolz
 
 import os
 import json
@@ -191,21 +192,18 @@ def prepareItemSaleSummary(context, databases):
         context.log("Total Item Sale : " + str(len(orderItems["documents"])))
         context.log(str(orderItems["documents"]))
 
-        summary = {}
-        for item in orderItems["documents"]:
-            key = item["productTbl"]["title"]
-            if key in summary:
-                summary[key]["price"] += item["price"]
-                summary[key]["quantity"] += item["order_quantity"]
-            else:
-                summary[key]["price"] = item["price"]
-                summary[key]["quantity"] = item["order_quantity"]
+        final_output = {}
+        grouped_result = itertoolz.groupby('title', orderItems["documents"])
 
-            context.log(" item : " + str(item))
-            context.log(" item Title : " + str(item["productTbl"]["title"]))
+        for key, value in grouped_result.items():
+            order_quantity = itertoolz.pluck('order_quantity', value)
+            final_output[key] = itertoolz.frequencies(order_quantity) 
 
-        for sale in summary:
-            context.log(str(sale))
+            # context.log(" item : " + str(item))
+            # context.log(" item Title : " + str(item["productTbl"]["title"]))
+
+        for key, value in grouped_result.items():
+            context.log(str(key) + " - " + str(value))
 
         return context.res.json({
             "success": True,
