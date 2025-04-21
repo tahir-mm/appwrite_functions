@@ -177,7 +177,7 @@ def fixUserData(context, databases):
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["USER_COLLECTION_ID"],
             queries=[
-                Query.starts_with("mobile", "4"),
+                Query.starts_with("mobile", 4),
                 Query.select(["$id", "full_name", "mobile"]),
                 Query.limit(10)                
               # ORDER BY createdAt DESC
@@ -221,17 +221,15 @@ def prepareItemSaleSummary(context, databases):
 
         summary = {}
         for item in orderItems["documents"]:
-            # key = item["productTbl"]["title"]
-            # if key in summary:
-            #     summary[key]["price"] += item["price"]
-            #     summary[key]["quantity"] += item["order_quantity"]
-            # else:
-            #     summary[key]["price"] = item["price"]
-            #     summary[key]["quantity"] = item["order_quantity"]
-
-            # context.log(" item : " + str(item))
             context.log(" item Title : " + str(item["productTbl"]["title"]) + " - No ordered: " + str(str(item["order_quantity"])))
+            item_title = item["productTbl"]["title"]
+            if item_title not in summary:
+                summary[item_title] = item["order_quantity"]
+            if item and "order_quantity" in item.keys():
+                summary[item_title] += item["order_quantity"]            
 
+        
+        context.log("Final :" + str(summary))
 
         return context.res.json({
             "success": True,
