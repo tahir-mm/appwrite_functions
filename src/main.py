@@ -179,7 +179,7 @@ def fixUserData(context, databases):
             queries=[
                 Query.starts_with("mobile", 4),
                 Query.select(["$id", "full_name", "mobile"]),
-                Query.limit(1)                
+                Query.limit(50)                
               # ORDER BY createdAt DESC
             ]
         )
@@ -188,7 +188,7 @@ def fixUserData(context, databases):
 
 
         for user in users["documents"]:
-            result = databases.update_document(
+             databases.update_document(
                 database_id=os.environ["DATABASE_ID"],
                 collection_id=os.environ["USER_COLLECTION_ID"],
                 document_id = user["$id"],
@@ -196,7 +196,7 @@ def fixUserData(context, databases):
                     'mobile' : int(str(61) + str(user["mobile"]))
                 }
             )
-            context.log(str(result))
+            # context.log(str(result))
 
         return context.res.json({
             "success": True,
@@ -226,7 +226,7 @@ def prepareItemSaleSummary(context, databases):
                 Query.greater_than("$createdAt", [str(seven_days_ago)]),
                 Query.less_than_equal("$createdAt", [str(current_datetime)]),
                 Query.select(["order_quantity", "unit_price", "price", "productTbl.title", "$createdAt"]),  
-                Query.limit(10)              # ORDER BY createdAt DESC
+                Query.limit(5000)              # ORDER BY createdAt DESC
             ]
         )
         context.log("Total Item Sale : " + str(len(orderItems["documents"])))
