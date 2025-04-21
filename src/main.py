@@ -230,18 +230,15 @@ def prepareItemSaleSummary(context, databases):
             ]
         )
         context.log("Total Item Sale : " + str(len(orderItems["documents"])))
-        context.log(str(orderItems["documents"]))
-
         summary = {}
         for item in orderItems["documents"]:
-            context.log(" item Title : " + str(item["productTbl"]["title"]) + " - No ordered: " + str(str(item["order_quantity"])))
+            # context.log(" item Title : " + str(item["productTbl"]["title"]) + " - No ordered: " + str(str(item["order_quantity"])))
             item_title = item["productTbl"]["title"]
             if item_title not in summary:
                 summary[item_title] = 0
             if item and "order_quantity" in item.keys():
                 summary[item_title] += item["order_quantity"]            
-
-        
+                
         context.log("Final :" + str(summary))
 
         return context.res.json({
