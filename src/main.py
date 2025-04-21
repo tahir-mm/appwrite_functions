@@ -168,6 +168,34 @@ def getAllOrderTotalByStatus(context, databases, status):
         }, status_code=500) 
 
 
+def fixUserData(context, databases):
+    try:
+        # Log messages and errors to the Appwrite Console
+        # These logs won't be seen by your end users
+        context.log("Fixing user mobile number: ")
+        result = databases.list_documents(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["USER_COLLECTION_ID"],
+            queries=[
+                Query.starts_with("mobile", "4"),
+                Query.select(["$id", "full_name", "mobile"]),
+                Query.limit(10)                
+              # ORDER BY createdAt DESC
+            ]
+        )
+        context.log("Total users: " + str(len(result["documents"])))
+        context.log(str(result["documents"]))
+        return context.res.json({
+            "success": True,
+            "message": "Documents fetched successfully.",
+            "documents": str(result["documents"])
+        })
+    except AppwriteException as err:
+        context.error("Could not list Product: " + repr(err))
+        return context.res.json({
+            "success": False,
+            "message": str(err)
+        }, status_code=500)      
 
 
 def prepareItemSaleSummary(context, databases):
@@ -284,7 +312,9 @@ def main(context):
         tokens = context.req.path.split("/")
         return getItemSales (context, databases, tokens[len(tokens) - 1])      
     elif "/itemSummary" in context.req.path:  #"/orderTotal/Completed"
-        return prepareItemSaleSummary (context, databases)           
+        return prepareItemSaleSummary (context, databases)  
+    elif "/fixData" in context.req.path:  #"/orderTotal/Completed"
+        return fixUserData (context, databases)              
     else:        
         return context.res.json(
             {
