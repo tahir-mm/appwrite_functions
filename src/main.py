@@ -178,8 +178,9 @@ def fixUserData(context, databases):
             collection_id=os.environ["USER_COLLECTION_ID"],
             queries=[
                 Query.starts_with("mobile", 4),
+                Query.order_desc("$createdAt"),
                 Query.select(["$id", "full_name", "mobile"]),
-                Query.limit(50)                
+                Query.limit(100)                
               # ORDER BY createdAt DESC
             ]
         )
@@ -238,7 +239,7 @@ def prepareItemSaleSummary(context, databases):
                 summary[item_title] = 0
             if item and "order_quantity" in item.keys():
                 summary[item_title] += item["order_quantity"]            
-                
+
         context.log("Final :" + str(summary))
 
         return context.res.json({
