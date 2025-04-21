@@ -237,7 +237,7 @@ def prepareItemSaleSummary(context, databases):
             context.log(" item Title : " + str(item["productTbl"]["title"]) + " - No ordered: " + str(str(item["order_quantity"])))
             item_title = item["productTbl"]["title"]
             if item_title not in summary:
-                summary[item_title] = item["order_quantity"]
+                summary[item_title] = 0
             if item and "order_quantity" in item.keys():
                 summary[item_title] += item["order_quantity"]            
 
