@@ -179,7 +179,7 @@ def fixUserData(context, databases):
             queries=[
                 Query.starts_with("mobile", 4),
                 Query.select(["$id", "full_name", "mobile"]),
-                Query.limit(10)                
+                Query.limit(1)                
               # ORDER BY createdAt DESC
             ]
         )
@@ -188,16 +188,15 @@ def fixUserData(context, databases):
 
 
         for user in users["documents"]:
-            # result = databases.update_document(
-            #     database_id=os.environ["DATABASE_ID"],
-            #     collection_id=os.environ["USER_COLLECTION_ID"],
-            #     document_id = user["$id"],
-            #     data = {
-            #         'mobile' : user["mobile"]
-            #     }
-            # )
-            mobileNo = int(str(61) + str(user["mobile"]))
-            context.log(str(mobileNo))
+            result = databases.update_document(
+                database_id=os.environ["DATABASE_ID"],
+                collection_id=os.environ["USER_COLLECTION_ID"],
+                document_id = user["$id"],
+                data = {
+                    'mobile' : int(str(61) + str(user["mobile"]))
+                }
+            )
+            context.log(str(result))
 
         return context.res.json({
             "success": True,
