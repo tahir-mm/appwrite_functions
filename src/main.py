@@ -173,7 +173,7 @@ def fixUserData(context, databases):
         # Log messages and errors to the Appwrite Console
         # These logs won't be seen by your end users
         context.log("Fixing user mobile number: ")
-        result = databases.list_documents(
+        users = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],
             collection_id=os.environ["USER_COLLECTION_ID"],
             queries=[
@@ -183,12 +183,26 @@ def fixUserData(context, databases):
               # ORDER BY createdAt DESC
             ]
         )
-        context.log("Total users: " + str(len(result["documents"])))
-        context.log(str(result["documents"]))
+        context.log("Total users: " + str(len(users["documents"])))
+        context.log(str(users["documents"]))
+
+
+        for user in users["documents"]:
+            # result = databases.update_document(
+            #     database_id=os.environ["DATABASE_ID"],
+            #     collection_id=os.environ["USER_COLLECTION_ID"],
+            #     document_id = user["$id"],
+            #     data = {
+            #         'mobile' : user["mobile"]
+            #     }
+            # )
+            mobileNo = int(str(61) + str(user["mobile"]))
+            context.log(str(mobileNo))
+
         return context.res.json({
             "success": True,
             "message": "Documents fetched successfully.",
-            "documents": str(result["documents"])
+            "documents": "Done"
         })
     except AppwriteException as err:
         context.error("Could not list Product: " + repr(err))
