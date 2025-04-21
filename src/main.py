@@ -187,7 +187,6 @@ def fixUserData(context, databases):
         context.log("Total users: " + str(len(users["documents"])))
         context.log(str(users["documents"]))
 
-
         for user in users["documents"]:
              databases.update_document(
                 database_id=os.environ["DATABASE_ID"],
@@ -240,7 +239,13 @@ def prepareItemSaleSummary(context, databases):
             if item and "order_quantity" in item.keys():
                 summary[item_title] += item["order_quantity"]            
 
-        context.log("Final :" + str(summary))
+
+        escaped_data = {
+            k: v.replace("'s", "\\'s") if isinstance(v, str) else v
+            for k, v in summary.items()
+        }
+
+        context.log("Final :" + str(escaped_data))
 
         return context.res.json({
             "success": True,
