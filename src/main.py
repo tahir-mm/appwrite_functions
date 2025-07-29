@@ -263,7 +263,8 @@ def prepareItemSaleSummary(context, databases):
 def updateProduct(context, databases):
     try:
         context.log("Updating product: ")
-        product = context.req.json
+        product = json.loads(context.req.body)
+        # product = context.req.json
         context.log("Product: " + str(product))
         if not product or not product.get("productId"):
             return context.res.json({
