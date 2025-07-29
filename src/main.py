@@ -260,7 +260,7 @@ def prepareItemSaleSummary(context, databases):
         }, status_code=500) 
 
 
-def updateProduct(context, databases):
+def updateProduct(context, databases, productId):
     try:
         context.log("Updating product: "+ str(context.req.body))
         product = json.loads(str(context.req.body))
@@ -271,6 +271,10 @@ def updateProduct(context, databases):
                 "success": False,
                 "message": "Product ID is required."
             }, status_code=400)
+        
+        context.log("Product Title : " + product.get("title", ""))
+        context.log("Product ListQuantity : " + product.get("listed_quantity", ""))
+        context.log("ProductId : " + productId)
 
         # result = databases.update_document(
         #     database_id=os.environ["DATABASE_ID"],
@@ -367,7 +371,7 @@ def main(context):
     elif "/updateProduct" in context.req.path:  #"/updateProduct/{productId}""
         tokens = context.req.path.split("/")
         context.log("Update Product: ", len(tokens), str(tokens))
-        return updateProduct (context, databases)           
+        return updateProduct (context, databases, tokens[len(tokens) - 1])           
     else:        
         return context.res.json(
             {
