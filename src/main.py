@@ -260,7 +260,41 @@ def prepareItemSaleSummary(context, databases):
         }, status_code=500) 
 
 
+def updateProduct(context, databases):
+    try:
+        context.log("Updating product: ")
+        product = context.req.json
+        context.log("Product: " + str(product))
+        if not product or not product.get("productId"):
+            return context.res.json({
+                "success": False,
+                "message": "Product ID is required."
+            }, status_code=400)
 
+        # result = databases.update_document(
+        #     database_id=os.environ["DATABASE_ID"],
+        #     collection_id=os.environ["PRODUCT_COLLECTION_ID"],
+        #     document_id=product["productId"],
+        #     data={
+        #         "title": product.get("title", ""),
+        #         "summary": product.get("summary", ""),
+        #         "price": product.get("price", 0),
+        #         "listed_quantity": product.get("listed_quantity", 0),
+        #         "available_quantity": product.get("available_quantity", 0) 
+        #     }
+        # )
+        # context.log("Updated Product: " + str(result))
+        # return context.res.json({
+        #     "success": True,
+        #     "message": "Product updated successfully.",
+        #     "document": result
+        # })
+    except AppwriteException as err:
+        context.error("Could not update Product: " + repr(err))
+        return context.res.json({
+            "success": False,
+            "message": str(err)
+        }, status_code=500)
 
 def getAllProduct(context, databases, quantity):
     try:
@@ -328,7 +362,11 @@ def main(context):
     elif "/itemSummary" in context.req.path:  #"/orderTotal/Completed"
         return prepareItemSaleSummary (context, databases)  
     elif "/fixData" in context.req.path:  #"/orderTotal/Completed"
-        return fixUserData (context, databases)              
+        return fixUserData (context, databases)    
+    elif "/updateProduct" in context.req.path:  #"/updateProduct/{productId}""
+        tokens = context.req.path.split("/")
+        context.log("Update Product: ", len(tokens), str(tokens))
+        return updateProduct (context, databases)           
     else:        
         return context.res.json(
             {
