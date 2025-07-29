@@ -264,12 +264,16 @@ def updateProduct(context, databases, productId):
     try:
         context.log("Updating product: "+ str(context.req.body))
         product = json.loads(str(context.req.body))
-        # product = context.req.json
         context.log("Product: " + str(product))
-        if not product or not product.get("productId"):
+
+        context.log("Product Title : " + product.get("title", ""))
+        context.log("Product ListQuantity : " + product.get("listed_quantity", ""))
+        context.log("ProductId : " + productId)
+
+        if not product or not productId:
             return context.res.json({
                 "success": False,
-                "message": "Product ID is required."
+                "message": "Product data is required."
             }, status_code=400)
         
         context.log("Product Title : " + product.get("title", ""))
