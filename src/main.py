@@ -266,8 +266,8 @@ def updateProduct(context, databases, productId):
         product = json.loads(str(context.req.body))
         context.log("Product: " + str(product))
 
-        context.log("Product Title : " + product.get("title", ""))
-        context.log("Product ListQuantity : " + product.get("listed_quantity", 0))
+        # context.log("Product Title : " + product.get("title", ""))
+        # context.log("Product ListQuantity : " + product.get("listed_quantity"))
         context.log("ProductId : " + productId)
 
         if not product or not productId:
