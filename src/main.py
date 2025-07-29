@@ -267,7 +267,7 @@ def updateProduct(context, databases, productId):
         context.log("Product: " + str(product))
 
         context.log("Product Title : " + product.get("title", ""))
-        context.log("Product ListQuantity : " + product.get("listed_quantity", ""))
+        context.log("Product ListQuantity : " + product.get("listed_quantity", 0))
         context.log("ProductId : " + productId)
 
         if not product or not productId:
@@ -275,29 +275,26 @@ def updateProduct(context, databases, productId):
                 "success": False,
                 "message": "Product data is required."
             }, status_code=400)
-        
-        context.log("Product Title : " + product.get("title", ""))
-        context.log("Product ListQuantity : " + product.get("listed_quantity", ""))
-        context.log("ProductId : " + productId)
 
-        # result = databases.update_document(
-        #     database_id=os.environ["DATABASE_ID"],
-        #     collection_id=os.environ["PRODUCT_COLLECTION_ID"],
-        #     document_id=product["productId"],
-        #     data={
-        #         "title": product.get("title", ""),
-        #         "summary": product.get("summary", ""),
-        #         "price": product.get("price", 0),
-        #         "listed_quantity": product.get("listed_quantity", 0),
-        #         "available_quantity": product.get("available_quantity", 0) 
-        #     }
-        # )
-        # context.log("Updated Product: " + str(result))
-        # return context.res.json({
-        #     "success": True,
-        #     "message": "Product updated successfully.",
-        #     "document": result
-        # })
+
+        result = databases.update_document(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["PRODUCT_COLLECTION_ID"],
+            document_id=productId,
+            data={
+                # "title": product.get("title", ""),
+                # "summary": product.get("summary", ""),
+                "price": product.get("price", 0),
+                "listed_quantity": product.get("listed_quantity", 0),
+                "available_quantity": product.get("available_quantity", 0) 
+            }
+        )
+        context.log("Updated Product: " + str(result))
+        return context.res.json({
+            "success": True,
+            "message": "Product updated successfully.",
+            "document": result
+        })
     except AppwriteException as err:
         context.error("Could not update Product: " + repr(err))
         return context.res.json({
